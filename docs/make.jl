@@ -7,3 +7,7 @@ makedocs(sitename="CreditMetrics.jl",
     modules = [CreditMetrics],
     pages = ["Home" => "index.md", "Reference" => "reference.md"]
 )
+
+deploydocs(
+    repo = "github.com/kasperrisager/CreditMetrics.jl.git",
+)
