@@ -1,7 +1,9 @@
-# CreditMetrics.jl Documentation
+# CreditMetrics.jl
 
-## Functions
+Basic information should go here.
 
-```@docs
-to_thresholds
+## Contents
+
+```@contents
+Pages = ["home.md", "reference.md"]
 ```
