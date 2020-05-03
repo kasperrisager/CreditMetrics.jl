@@ -13,7 +13,7 @@ end
     @test_throws DomainError CreditMetrics.verify_probabilities([])
     @test_throws DomainError CreditMetrics.verify_probabilities([0.1, 0.4])
     @test_throws DomainError CreditMetrics.verify_probabilities([-0.5, 1.5])
-    @test_throws DomainError CreditMetrics.verify_thresholds([0.0, -1.0])
+    @test_throws DomainError CreditMetrics.verify_thresholds([0.0, 1.0, -1.0])
 
     # Test that correct data does not result in errors
     @test to_thresholds([0.5, 0.5], Checked()) == [0.0]
