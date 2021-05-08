@@ -1,7 +1,15 @@
 language: julia
+
 julia:
   - 1
-coveralls: true
+
+notifications:
+  email: false
+
+after_success:
+  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage;
+              Codecov.submit(Codecov.process_folder())';
+
 jobs:
   include:
     - stage: "Documentation"
