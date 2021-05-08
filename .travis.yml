@@ -3,8 +3,6 @@ language: julia
 julia:
   - 1
 
-codecov: true
-
 notifications:
   email: false
 
