@@ -1,7 +1,7 @@
 language: julia
 julia:
   - 1
-coveralls: true
+codecov: true
 jobs:
   include:
     - stage: "Documentation"
