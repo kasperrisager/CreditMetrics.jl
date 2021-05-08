@@ -1,6 +1,6 @@
 # CreditMetrics
 
-[![Build Status](https://travis-ci.com/kasperrisager/CreditMetrics.jl.svg?branch=master)](https://travis-ci.com/kasperrisager/CreditMetrics.jl)
+[![CI](https://github.com/kasperrisager/CreditMetrics.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/kasperrisager/CreditMetrics.jl/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/kasperrisager/CreditMetrics.jl/branch/master/graph/badge.svg?token=XAY2JOUIQI)](https://codecov.io/gh/kasperrisager/CreditMetrics.jl)
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://kasperrisager.github.io/CreditMetrics.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://kasperrisager.github.io/CreditMetrics.jl/dev)
