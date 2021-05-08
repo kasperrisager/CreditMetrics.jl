@@ -2,52 +2,68 @@ export AbstractProbabilityVector, AbstractUnitIntervalThresholds, AbstractRealLi
 export probabilities, thresholds, deformation, outcome, deformation_value, outcome_value, meanvalue
 export ProbabilityVector, UnitIntervalThresholds, RealLineThresholds, DeformedRealLineThresholds
 
-"Abstract type for probability vectors with entries of type 'T' summing to one"
+"""
+    AbstractProbabilityVector{T}
+
+Abstract type for probability vectors with entries of type `T` summing to one.
+"""
 abstract type AbstractProbabilityVector{T} end
 
 """
-    probabilities(apv::AbstractProbabilityVector)
+    probabilities(apv::AbstractProbabilityVector{T})
 
-Get the probabilities of 'apv' in a raw format
+Get the probabilities of `apv` in a raw format, typically an `AbstractVector{T}`.
 """
 function probabilities(apv::AbstractProbabilityVector) end
 
-"Abstract type for a weakly sorted vector of thresholds of type 'T' where values are between zero and one"
+"""
+    AbstractUnitIntervalThresholds{T}
+
+Abstract type for a weakly sorted vector of thresholds of type `T` where values are between zero and one.
+"""
 abstract type AbstractUnitIntervalThresholds{T} end
 
 """
-    thresholds(auit::AbstractUnitIntervalThresholds)
+    thresholds(auit::AbstractUnitIntervalThresholds{T}) where {T}
 
-Get the thresholds of 'auit' in a raw format
+Get the thresholds of `auit` in a raw format, typically an `AbstractVector{T}`.
 """
 function thresholds(auit::AbstractUnitIntervalThresholds) end
 
-"Abstract type for a weakly sorted vector of thresholds of type 'T' where values are unconstrained"
+"""
+    AbstractRealLineThresholds{T}
+
+Abstract type for a weakly sorted vector of thresholds of type `T` where values are unconstrained
+"""
 abstract type AbstractRealLineThresholds{T} end
 
 """
-    thresholds(arlt::AbstractRealLineThresholds)
+    thresholds(arlt::AbstractRealLineThresholds{T}) where {T}
 
-Get the thresholds of 'arlt' in a raw format
+Get the thresholds of `arlt` in a raw format, typically an `AbstractVector{T}`.
 """
-function thresholds(arlt::AbstractRealLineThresholds) end
+function thresholds(arlt::AbstractRealLineThresholds{T}) where {T} end
 
 
 
 """
-Vector of probabilities that sum to one
+    ProbabilityVector{T, TVec <: AbstractVector{T}} <: AbstractProbabilityVector{T}
 
-The ProbabilityVector type is used for checking that a vector of probabilities sums to one and using
-    the type system to express that.
+Trusted vector of probabilities of type `T` that sum to one.
+
+    ProbabilityVector(ps::TVec) where {T, TVec<:AbstractVector{T}}
+
+Convert a vector of probabilities to a `ProbabilityVector`, thereby ensuring that probabilities
+are non-negative and sum to one (trusted). Regarding the last requirement, this constructor is very unforgiving.
+
+    ProbabilityVector(apv::AbstractProbabilityVector{T}) where {T}
+    ProbabilityVector(auit::AbstractUnitIntervalThresholds{T}) where {T}
+
+Convert to `ProbabilityVector` other types that are trusted.
 """
 struct ProbabilityVector{T, TVec <: AbstractVector{T}} <: AbstractProbabilityVector{T}
     probabilities::TVec
     
-    """
-        ProbabilityVector(ps::TVec) where {T, TVec<:AbstractVector{T}}
-
-    Convert a raw vector 'ps' of probabilities of type 'T' to a ProbabilityVector
-    """
     function ProbabilityVector(ps::TVec) where {T, TVec<:AbstractVector{T}}
         if length(ps) == 0
             throw(DomainError(ps, "Vector of probabilities was empty so could not possibly sum to one."))
@@ -63,21 +79,11 @@ struct ProbabilityVector{T, TVec <: AbstractVector{T}} <: AbstractProbabilityVec
         return new{T, TVec}(ps)
     end
 
-    """
-        ProbabilityVector(apv::AbstractProbabilityVector{T}) where {T}
-
-    Convert an AbstractProbabilityVector to a ProbabilityVector by extracting underlying probabilities
-    """
     function ProbabilityVector(apv::AbstractProbabilityVector{T}) where {T}
         p = probabilities(apv)
         return new{T, typeof(p)}(p)
     end
 
-    """
-        ProbabilityVector(auit::AbstractUnitIntervalThresholds{T}) where {T}
-
-    Convert an AbstractUnitIntervalThresholds 'auit' to a ProbabilityVector
-    """
     function ProbabilityVector(auit::AbstractUnitIntervalThresholds{T}) where {T}
         thrs = thresholds(auit)
         n = length(thrs) + 1
@@ -97,30 +103,38 @@ struct ProbabilityVector{T, TVec <: AbstractVector{T}} <: AbstractProbabilityVec
     end
 end
 
-"""
-    probabilities(pv::ProbabilityVector)
-
-Get the probabilities of 'pv' in a raw format
-"""
 function probabilities(pv::ProbabilityVector) 
     return pv.probabilities
 end
 
 
 """
+    UnitIntervalThresholds{T, TVec <: AbstractVector{T}} <: AbstractUnitIntervalThresholds{T}
+
 A weakly sorted vector of values on the interval from zero and one.
 
-The UnitIntervalThresholds struct is used to check that values are in interval and weakly sorted, and using
-    the type system to express that.
+The `UnitIntervalThresholds` struct is used to check that values are in interval and weakly sorted, and using
+the type system to express that.
+
+    UnitIntervalThresholds(thr::TVec) where {T, TVec <: AbstractVector{T}}
+
+Convert a vector `thr` of thresholds of type `T` to a UnitIntervalThresholds
+
+    UnitIntervalThresholds(auit::AbstractUnitIntervalThresholds{T})
+
+Convert an AbstractUnitIntervalThresholds `auit` to a UnitIntervalThresholds by extracting its thresholds
+
+    UnitIntervalThresholds(apv::AbstractProbabilityVector{T}) where {T}
+
+Convert an `AbstractProbabilityVector` to a `UnitIntervalThresholds`
+
+    UnitIntervalThresholds(arlt::AbstractRealLineThresholds{TReal}, atl::AbstractThresholdLink{TUnit, TReal}) where {TUnit, TReal}
+
+Convert an AbstractRealLineThresholds `arlt` to a UnitIntervalThresholds using the threshold link `atl`
 """
 struct UnitIntervalThresholds{T, TVec <: AbstractVector{T}} <: AbstractUnitIntervalThresholds{T}
     thresholds::TVec
 
-    """
-        UnitIntervalThresholds(thr::TVec) where {T, TVec <: AbstractVector{T}}
-
-    Convert a vector 'thr' of thresholds of type 'T' to a UnitIntervalThresholds
-    """
     function UnitIntervalThresholds(thr::TVec) where {T, TVec <: AbstractVector{T}}
         if length(thr) == 0
             return new{T, TVec}(thr)
@@ -137,21 +151,11 @@ struct UnitIntervalThresholds{T, TVec <: AbstractVector{T}} <: AbstractUnitInter
         return new{T, TVec}(thr)
     end
 
-    """
-        UnitIntervalThresholds(auit::AbstractUnitIntervalThresholds{T})
-
-    Convert an AbstractUnitIntervalThresholds 'auit' to a UnitIntervalThresholds by extracting its thresholds
-    """
     function UnitIntervalThresholds(auit::AbstractUnitIntervalThresholds{T}) where {T}
         thrs = thresholds(auit)
         return new{T, typeof(thrs)}(thrs)
     end
 
-    """
-        UnitIntervalThresholds(apv::AbstractProbabilityVector{T}) where {T}
-
-    Convert an AbstractProbabilityVector to a UnitIntervalThresholds
-    """
     function UnitIntervalThresholds(apv::AbstractProbabilityVector{T}) where {T}
         probs = probabilities(apv)
         n = length(probs)
@@ -165,39 +169,38 @@ struct UnitIntervalThresholds{T, TVec <: AbstractVector{T}} <: AbstractUnitInter
         return new{T, Vector{T}}(thresholds)
     end
     
-    """
-        UnitIntervalThresholds(arlt::AbstractRealLineThresholds{TReal}, atl::AbstractThresholdLink{TUnit, TReal}) where {TUnit, TReal}
-
-    Convert an AbstractRealLineThresholds 'arlt' to a UnitIntervalThresholds using the threshold link 'alt'
-    """
     function UnitIntervalThresholds(arlt::AbstractRealLineThresholds{TReal}, atl::AbstractThresholdLink{TUnit, TReal}) where {TUnit, TReal}
         return new{TUnit, Vector{TUnit}}(cdf(atl).(thresholds(arlt)))
     end
 end
 
-"""
-    thresholds(uit::UnitIntervalThresholds)
-
-Extract raw thresholds from 'uit'
-"""
 function thresholds(uit::UnitIntervalThresholds)
     return uit.thresholds
 end
     
 """
+    RealLineThresholds{T, TVec <: AbstractVector{T}} <: AbstractRealLineThresholds{T}
+
 A weakly sorted vector of values on the real line.
 
 The UnitIntervalThresholds struct is used to check that values are weakly sorted, and using
     the type system to express that.
+
+    RealLineThresholds(rlt::TVec) where {T, TVec <: AbstractVector{T}}
+
+Convert a raw vector of thresholds `rlt` of type `T` to a RealLineThresholds
+
+    RealLineThresholds(arlt::AbstractRealLineThresholds{T}) where {T}
+    
+Convert an AbstractRealLineThresholds `arlt` to a RealLineThresholds by extracting the raw thresholds
+
+    RealLineThresholds(auit::AbstractUnitIntervalThresholds{TUnit}, atl::AbstractThresholdLink{TUnit, TReal}) where {TUnit, TReal}
+
+Convert an AbstractUnitIntervalThresholds `auit` to a RealLineThresholds using the link `atl`
 """
 struct RealLineThresholds{T, TVec <: AbstractVector{T}} <: AbstractRealLineThresholds{T}
     thresholds::TVec
 
-    """
-        RealLineThresholds(rlt::TVec) where {T, TVec <: AbstractVector{T}}
-
-    Convert a raw vector of thresholds 'rlt' of type 'T' to a RealLineThresholds
-    """
     function RealLineThresholds(rlt::TVec) where {T, TVec <: AbstractVector{T}}
         if (!issorted(rlt, lt=(<=)))
             throw(DomainError(ps, "Thresholds were not weakly sorted"))
@@ -205,36 +208,23 @@ struct RealLineThresholds{T, TVec <: AbstractVector{T}} <: AbstractRealLineThres
         return new{T, TVec}(rlt)
     end
 
-    """
-        RealLineThresholds(arlt::AbstractRealLineThresholds{T}) where {T}
-    
-    Convert an AbstractRealLineThresholds 'arlt' to a RealLineThresholds by extracting the raw thresholds
-    """
     function RealLineThresholds(arlt::AbstractRealLineThresholds{T}) where {T}
         thrs = thresholds(arlt)
         return new{T, typeof(thrs)}(thrs)
     end
 
-    """
-        RealLineThresholds(auit::AbstractUnitIntervalThresholds{TUnit}, atl::AbstractThresholdLink{TUnit, TReal}) where {TUnit, TReal}
-
-    Convert an AbstractUnitIntervalThresholds 'auit' to a RealLineThresholds using the link 'atl'
-    """
     function RealLineThresholds(auit::AbstractUnitIntervalThresholds{TUnit}, atl::AbstractThresholdLink{TUnit, TReal}) where {TUnit, TReal}
         return new{TReal, Vector{TReal}}(invcdf(atl).(thresholds(auit)))
     end
 end
 
-"""
-    thresholds(rlt::RealLineThresholds)
-
-Extract the raw thresholds from 'rlt'
-"""
 function thresholds(rlt::RealLineThresholds)
     return rlt.thresholds
 end
 
 """
+    DeformedRealLineThresholds{T, TBase <: AbstractRealLineThresholds{T}} <: AbstractRealLineThresholds{T}
+
 A weakly sorted vector of values on the real line that has been affinely deformed.
 
 DeformedRealLineThresholds holds the specification of the affine deformation and defers calculation
@@ -246,17 +236,26 @@ struct DeformedRealLineThresholds{T, TBase <: AbstractRealLineThresholds{T}} <: 
     norm::T
 end
 
-"""
-    thresholds(drlt::DeformedRealLineThresholds{T}) where {T}
-
-Calculate the raw thresholds of 'drlt'
-"""
 function thresholds(drlt::DeformedRealLineThresholds{T}) where {T}
     return (thresholds(drlt.undeformed) .+ drlt.push) ./ drlt.norm
 end
 
+# Operations on the above types
 
-# Operations on the above types. Doc todo
+"""
+Make a deformation of probabilities or thresholds
+
+    deformation(arlt::AbstractRealLineThresholds, push, norm)
+    deformation(auit::AbstractUnitIntervalThresholds, atl::AbstractThresholdLink, push, norm)
+    deformation(apv::AbstractProbabilityVector, atl::AbstractThresholdLink, push, norm)
+
+Deformations are made on the thresholds on the real line. They consist of a `push` that moves the thresholds
+and a `norm` with which the pushed thresholds are divided for proper normalization.
+    
+Methods on probabilities and unit interval thresholds are provided for ease of use and also depend on a threshold link
+`atl`.
+"""
+function deformation end
 
 function deformation(arlt::AbstractRealLineThresholds, push, norm)
     return DeformedRealLineThresholds(arlt, push, norm)
@@ -270,6 +269,11 @@ function deformation(apv::AbstractProbabilityVector, atl::AbstractThresholdLink,
     return ProbabilityVector(deformation(UnitIntervalThresholds(apv), atl, push, norm))
 end
 
+"""
+Compute the outcome of a particular realization of scenario
+"""
+function outcome end
+
 function outcome(ths, z)
     return searchsortedfirst(thresholds(ths), z)
 end
@@ -278,6 +282,10 @@ function outcome(ths, zs::AbstractVector)
     return [outcome(ths, z) for z in zs]
 end
 
+"""
+Compute the mean value when given the value for each outcome.
+"""
+function meanvalue end
 
 function meanvalue(apv::AbstractProbabilityVector, values::AbstractVector)
     ps = probabilities(apv)
@@ -308,6 +316,10 @@ function meanvalue(auit::AbstractUnitIntervalThresholds{T}, values::AbstractVect
     end
 end
 
+"""
+Compute the mean value after a deformation when the values for each outcome is given.
+"""
+function deformation_value end
 
 function deformation_value(auit::AbstractUnitIntervalThresholds, values::AbstractVector, atl::AbstractThresholdLink, push, norm)
     return meanvalue(deformation(auit, atl, push, norm), values)
@@ -320,6 +332,11 @@ end
 function deformation_value(arlt::AbstractRealLineThresholds, values::AbstractVector, atl::AbstractThresholdLink, pushs::AbstractVector, norm)
     return [deformation_value(arlt, values, atl, push, norm) for push in pushs]
 end
+
+"""
+Compute the values for one or more outcomes.
+"""
+function outcome_value end
 
 function outcome_value(auit::AbstractUnitIntervalThresholds, values::AbstractVector, p)
     return values[outcome(auit, p)]

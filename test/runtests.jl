@@ -87,7 +87,3 @@ end
     @test_throws TypeError NormalThresholdLink{String}()
     @test_throws TypeError NormalThresholdLink{Int}()
 end
-
-
-
-
