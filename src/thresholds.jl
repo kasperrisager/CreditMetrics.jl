@@ -68,7 +68,7 @@ struct ProbabilityVector{T, TVec <: AbstractVector{T}} <: AbstractProbabilityVec
         if length(ps) == 0
             throw(DomainError(ps, "Vector of probabilities was empty so could not possibly sum to one."))
         end
-        if sum(ps) != one(T)
+        if sum(ps) != oneunit(T)
             throw(DomainError(ps, "Vector of probabilities did not sum to one."))
         end
         for p in ps
@@ -90,13 +90,13 @@ struct ProbabilityVector{T, TVec <: AbstractVector{T}} <: AbstractProbabilityVec
         probabilities = Vector{T}(undef, n)
         @inbounds begin
             if n == 1
-                probabilities[1] = one(T) - zero(T)
+                probabilities[1] = oneunit(T) - zero(T)
             else
                 probabilities[1] = thrs[1] - zero(T)
                 for i in 2:(n-1)
                     probabilities[i] = thrs[i] - thrs[i-1]
                 end
-                probabilities[n] = one(T) - thrs[n-1]
+                probabilities[n] = oneunit(T) - thrs[n-1]
             end
         end
         return new{T, Vector{T}}(probabilities)
@@ -142,7 +142,7 @@ struct UnitIntervalThresholds{T, TVec <: AbstractVector{T}} <: AbstractUnitInter
         if first(thr) < zero(T)
             throw(DomainError(thr, "Unit interval thresholds had a value less than zero."))
         end
-        if last(thr) > one(T)
+        if last(thr) > oneunit(T)
             throw(DomainError(thr, "Unit interval thresholds had a value greater than one."))
         end
         if !issorted(thr)
@@ -304,13 +304,13 @@ function meanvalue(auit::AbstractUnitIntervalThresholds{T}, values::AbstractVect
     end
     @inbounds begin
         if n == 1
-            return (one(T) - zero(T)) * values[1]
+            return (oneunit(T) - zero(T)) * values[1]
         else
             rv = (first(thrs) - zero(T)) * values[1]
             for i in 2:(n-1)
                 rv += (thrs[i] - thrs[i-1]) * values[i]
             end
-            rv += (one(T) - last(thrs)) * values[n]
+            rv += (oneunit(T) - last(thrs)) * values[n]
             return rv
         end
     end
